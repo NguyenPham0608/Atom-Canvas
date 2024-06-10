@@ -368,7 +368,7 @@ function sqrt(x){
     return(Math.sqrt(x))
 }
 
-document.addEventListener('click', function(){
+window.addEventListener('click', function(){
 
     if((mouseX<300)==false){
         newDetectedMLCIDXCan=getRandomInt(100000,999999)
@@ -380,34 +380,38 @@ document.addEventListener('click', function(){
 })
 
 
-document.addEventListener('mousemove',function(e){
-    mouseX=e.x-canvasPosition.left
-    mouseY=e.y-canvasPosition.top
+window.addEventListener('mousemove',function(e){
+    // mouseX=e.x-canvasPosition.left
+    // mouseY=e.y-canvasPosition.top
+    mouseX=e.pageX
+    mouseY=e.pageY
 })
 
-document.addEventListener('mousedown',function(e){
+window.addEventListener('mousedown',function(e){
     mouseDownX=mouseX
     mouseDownY=mouseY
     mouseDown=true
     mouseDownTime++
 })
-document.addEventListener('mouseup',function(){
+window.addEventListener('mouseup',function(){
     mouseDown=false
     mouseDownTime=0
 })
 
-document.addEventListener('keydown', function(e){
+window.addEventListener('keydown', function(e){
     if(e.key==' '){
         space=true
     }
 
 })
 
-document.addEventListener('keyup', function(e){
+window.addEventListener('keyup', function(e){
     if(e.key==' '){
         space=false
     }
 })
+
+window.addEventListener('resize', resizeCanvas())
 
 
 function getRandomInt(min, max) {
@@ -415,6 +419,11 @@ function getRandomInt(min, max) {
     const maxFloored = Math.floor(max);
     return Math.floor(Math.random() * (maxFloored - minCeiled) + minCeiled);
   }
+
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
 
 
 loop()
