@@ -65,8 +65,7 @@ const detectorArray=[]
 
 class Molecule{
     constructor(x,y,idx){
-        this.x=x
-        this.y=y
+
         if (brush==1) {
             this.fillStyle='black'
             this.strokestyle='black'
@@ -97,13 +96,16 @@ class Molecule{
             this.y=moleculeY
         }
 
+        this.x=x+this.moleculeRadius
+        this.y=y+this.moleculeRadius
+
         if(this.brushType==1){
             detectorArray.push(new Detector(this.x-3+this.armLength,this.y-3, 1, this.idx,this.armLength))
             detectorArray.push(new Detector(this.x-3-this.armLength,this.y-3, 2, this.idx,this.armLength))
             detectorArray.push(new Detector(this.x-3,this.y-3+this.armLength, 3, this.idx,this.armLength))
             detectorArray.push(new Detector(this.x-3,this.y-3-this.armLength, 4, this.idx,this.armLength))
         }else{
-            detectorArray.push(new Detector(this.x-3,this.y-3-this.armLength, 4, this.idx,this.armLength))
+            detectorArray.push(new Detector(this.x+this.moleculeRadius/2,this.y+3-this.armLength, 4, this.idx,this.armLength))
         }
 
 
@@ -127,38 +129,38 @@ class Molecule{
     }
     draw(){
 
-
+        console.log(brush)
         ctx.beginPath()
         ctx.lineWidth=2
         ctx.strokeStyle=this.strokestyle
         ctx.fillStyle=this.fillStyle
         if(this.brushType==1){
-            ctx.moveTo(this.x-moleculeRadius/2,this.y-moleculeRadius/2)
-            ctx.lineTo(this.x-moleculeRadius/2,this.armLength+this.y-moleculeRadius/2)
+            ctx.moveTo(this.x-this.moleculeRadius,this.y-this.moleculeRadius)
+            ctx.lineTo(this.x-this.moleculeRadius,this.armLength+this.y-this.moleculeRadius)
     
-            ctx.moveTo(this.x-moleculeRadius/2,this.y-moleculeRadius/2)
-            ctx.lineTo(this.x-moleculeRadius/2,-this.armLength+this.y-moleculeRadius/2)
+            ctx.moveTo(this.x-this.moleculeRadius,this.y-this.moleculeRadius)
+            ctx.lineTo(this.x-this.moleculeRadius,-this.armLength+this.y-this.moleculeRadius)
     
-            ctx.moveTo(this.x-moleculeRadius/2,this.y-moleculeRadius/2)
-            ctx.lineTo(this.armLength+this.x-moleculeRadius/2,this.y-moleculeRadius/2)
+            ctx.moveTo(this.x-this.moleculeRadius,this.y-this.moleculeRadius)
+            ctx.lineTo(this.armLength+this.x-this.moleculeRadius,this.y-this.moleculeRadius)
     
-            ctx.moveTo(this.x-moleculeRadius/2,this.y-moleculeRadius/2)
-            ctx.lineTo(-this.armLength+this.x-moleculeRadius/2,this.y-moleculeRadius/2)
+            ctx.moveTo(this.x-this.moleculeRadius,this.y-this.moleculeRadius)
+            ctx.lineTo(-this.armLength+this.x-this.moleculeRadius,this.y-this.moleculeRadius)
         }else{
             if(this.armNumber==1){
-                ctx.moveTo(this.x-moleculeRadius/2,this.y-moleculeRadius/2)
-                ctx.lineTo(-this.armLength+this.x-moleculeRadius/2,this.y-moleculeRadius/2)
+                ctx.moveTo(this.x-this.moleculeRadius,this.y-this.moleculeRadius)
+                ctx.lineTo(-this.armLength+this.x-this.moleculeRadius,this.y-this.moleculeRadius)
             }else{
                 if(this.armNumber==2){
-                    ctx.moveTo(this.x-moleculeRadius/2,this.y-moleculeRadius/2)
-                    ctx.lineTo(this.armLength+this.x-moleculeRadius/2,this.y-moleculeRadius/2)
+                    ctx.moveTo(this.x-this.moleculeRadius,this.y-this.moleculeRadius)
+                    ctx.lineTo(this.armLength+this.x-this.moleculeRadius,this.y-this.moleculeRadius)
                 }else{
                     if(this.armNumber==3){
-                        ctx.moveTo(this.x-moleculeRadius/2,this.y-moleculeRadius/2)
-                        ctx.lineTo(this.x-moleculeRadius/2,-this.armLength+this.y-moleculeRadius/2)
+                        ctx.moveTo(this.x-this.moleculeRadius,this.y-this.moleculeRadius)
+                        ctx.lineTo(this.x-this.moleculeRadius,-this.armLength+this.y-this.moleculeRadius)
                     }else{
-                        ctx.moveTo(this.x-moleculeRadius/2,this.y-moleculeRadius/2)
-                        ctx.lineTo(this.x-moleculeRadius/2,this.armLength+this.y-moleculeRadius/2)
+                        ctx.moveTo(this.x-this.moleculeRadius,this.y-this.moleculeRadius)
+                        ctx.lineTo(this.x-this.moleculeRadius,this.armLength+this.y-this.moleculeRadius)
                     }
                 }
             }
@@ -167,7 +169,7 @@ class Molecule{
 
         ctx.beginPath()
         ctx.fillStyle=this.fillStyle
-        ctx.arc(this.x-moleculeRadius/2,this.y-moleculeRadius/2,this.moleculeRadius,0,Math.PI*2,false)
+        ctx.arc(this.x-this.moleculeRadius,this.y-this.moleculeRadius,this.moleculeRadius,0,Math.PI*2,false)
 
         ctx.fill()
 
@@ -182,12 +184,10 @@ class Molecule{
             }else{
                 ctx.beginPath()
                 ctx.font='13px verdana'
-                ctx.fillText(this.label, this.x-20, this.y-10, 99999000)
+                ctx.fillText(this.label, this.x-12, this.y-3, 99999000)
             }
         }
-
     }
-
 }
 
 
@@ -207,8 +207,8 @@ class Detector{
     }
 
     calculate(){
-        this.dx=this.x-mouseX
-        this.dy=this.y-mouseY
+        this.dx=this.x-mouseX-this.range
+        this.dy=this.y-mouseY-this.range
         this.distance=Math.sqrt((this.dx**2)+(this.dy**2))
     }
     update(){
@@ -218,24 +218,24 @@ class Detector{
             newDetectedARM=this.armNumber
             newDetectedMLCIDX=newDetectedMLCIDXCan
             if(this.armNumber==1){
-                inRangeX=this.x+3+this.bondDistance
-                inRangeY=this.y+3
+                inRangeX=this.x+this.bondDistance-this.range-2.45
+                inRangeY=this.y-this.range-2.4
 
             }else{
                 if(this.armNumber==2){
 
-                    inRangeX=this.x+3-this.bondDistance
-                    inRangeY=this.y+3
+                    inRangeX=this.x-this.bondDistance-this.range-2.45
+                    inRangeY=this.y-this.range-2.4
 
 
                 }else{
                     if(this.armNumber==3){
-                        inRangeX=this.x+3
-                        inRangeY=this.y+3+this.bondDistance
+                        inRangeX=this.x-this.range-2.4
+                        inRangeY=this.y+this.bondDistance-this.range-2.45
 
                     }else{
-                        inRangeX=this.x+3
-                        inRangeY=this.y+3-this.bondDistance
+                        inRangeX=this.x-this.range-2.4
+                        inRangeY=this.y-this.bondDistance-this.range-2.45
                     }
                 }
             }
@@ -332,7 +332,7 @@ function drawOptions(){
     dx=(panX+60)-mouseX
     dy=790-mouseY
     distance=sqrt(dx**2+dy**2)
-    console.log(distance)
+
 
     if(distance<50){
         if(mouseDown){
