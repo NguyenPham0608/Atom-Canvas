@@ -294,11 +294,12 @@ function loop(){
 
 function drawOptions(){
     ctx.fillStyle='lightgray'
-    if(mouseX<310){
-        panX+=0.2*(0-panX)
-    }else{
-        panX+=0.2*(-350-panX)
-    }
+    // if(mouseX<310){
+    //     panX+=0.2*(0-panX)
+    // }else{
+    //     panX+=0.2*(-350-panX)
+    // }
+    panX=0
     ctx.fillRect(panX,panY,300,canvas.height)
 
     ctx.beginPath()
