@@ -18,9 +18,12 @@ snapAudio.src='Finger Snap.wav'
 let deleteX=0
 let deleteY=0
 
+
 let lastKey
 
 let connected=0
+
+let hoverLabel=0
 
 let z =0
 
@@ -45,6 +48,10 @@ let newestMoleculeIdx=0
 
 let panX=0
 let panY=0
+
+let hoverTrash=false
+
+let detectors=0
 
 let newDetectedIDX=0
 let newDetectedARM=0
@@ -119,31 +126,43 @@ class Molecule{
         this.y=y+this.moleculeRadius
 
         if(this.brushType==1){
-            detectorArray.push(new Detector(this.x-3+this.armLength,this.y-3, 1, this.idx,this.armLength))
-            detectorArray.push(new Detector(this.x-3-this.armLength,this.y-3, 2, this.idx,this.armLength))
-            detectorArray.push(new Detector(this.x-3,this.y-3+this.armLength, 3, this.idx,this.armLength))
-            detectorArray.push(new Detector(this.x-3,this.y-3-this.armLength, 4, this.idx,this.armLength))
+            detectors++
+            detectorArray.push(new Detector(this.x-4.90+this.armLength,this.y-4.90, 1, this.idx,this.armLength,detectors))
+            detectors++
+            detectorArray.push(new Detector(this.x-4.90-this.armLength,this.y-4.90, 2, this.idx,this.armLength,detectors))
+            detectors++
+            detectorArray.push(new Detector(this.x-4.90,this.y-4.95+this.armLength, 3, this.idx,this.armLength,detectors))
+            detectors++
+            detectorArray.push(new Detector(this.x-4.90,this.y-4.95-this.armLength, 4, this.idx,this.armLength,detectors))
         }else{
             if(this.brushType==2){
-                if(this.connected==1){
-                    detectorArray.push(new Detector(this.x+this.moleculeRadius/2,this.y+3-this.armLength, 4, this.idx,this.armLength))
+                if(this.connected==0){
+                    detectors++
+                    detectorArray.push(new Detector(this.x+this.moleculeRadius/2,this.y+3-this.armLength, 4, this.idx,this.armLength,detectors))
                 }
             }else{
                 //next//
                 if(this.connected==0){
-                    detectorArray.push(new Detector(this.x-3,this.y-3+this.armLength, 3, this.idx,this.armLength))
-                    detectorArray.push(new Detector(this.x-3,this.y-3-this.armLength, 4, this.idx,this.armLength))
+                    detectors++
+                    detectorArray.push(new Detector(this.x-3,this.y-3+this.armLength, 3, this.idx,this.armLength,detectors))
+                    detectors++
+                    detectorArray.push(new Detector(this.x-3,this.y-3-this.armLength, 4, this.idx,this.armLength,detectors))
+                    
                 }else{
                     if(this.detectorPositions==1){
-                        detectorArray.push(new Detector(this.x-3+this.armLength,this.y-3, 1, this.idx,this.armLength))
+                        detectors++
+                        detectorArray.push(new Detector(this.x-3+this.armLength,this.y-3, 1, this.idx,this.armLength,detectors))
                     }else{
                         if(this.detectorPositions==2){
-                            detectorArray.push(new Detector(this.x-3-this.armLength,this.y-3, 2, this.idx,this.armLength))
+                            detectors++
+                            detectorArray.push(new Detector(this.x-3-this.armLength,this.y-3, 2, this.idx,this.armLength,detectors))
                         }else{
                             if(this.detectorPositions==3){
-                                detectorArray.push(new Detector(this.x-3,this.y-3+this.armLength, 3, this.idx,this.armLength))
+                                detectors++
+                                detectorArray.push(new Detector(this.x-3,this.y-3+this.armLength, 3, this.idx,this.armLength,detectors))
                             }else{
-                                detectorArray.push(new Detector(this.x-3,this.y-3-this.armLength, 4, this.idx,this.armLength))
+                                detectors++
+                                detectorArray.push(new Detector(this.x-3,this.y-3-this.armLength, 4, this.idx,this.armLength,detectors))
                             }
                         }  
                     }
@@ -275,7 +294,7 @@ class Molecule{
 
 
 class Detector{
-    constructor(x,y,armNumber, moleculeIDX, armLength){
+    constructor(x,y,armNumber, moleculeIDX, armLength,idx){
         this.moleculeIdx=moleculeIDX
         this.armNumber=armNumber
         this.armLength=0
@@ -286,6 +305,7 @@ class Detector{
         this.dy=0
         this.distance=0
         this.range=10
+        this.idx=idx
         this.fillStyle='blue'
     }
 
@@ -301,30 +321,30 @@ class Detector{
             newDetectedARM=this.armNumber
             newDetectedMLCIDX=newDetectedMLCIDXCan
             if(this.armNumber==1){
-                inRangeX=this.x+this.bondDistance-this.range-2.45
-                inRangeY=this.y-this.range-2.4
+                inRangeX=this.x+this.bondDistance-this.range-0.5
+                inRangeY=this.y-this.range-0.5
                 detectorPositions=1
                 connected=1
 
             }else{
                 if(this.armNumber==2){
 
-                    inRangeX=this.x-this.bondDistance-this.range-2.45
-                    inRangeY=this.y-this.range-2.4
+                    inRangeX=this.x-this.bondDistance-this.range-0.5
+                    inRangeY=this.y-this.range-0.5
                     detectorPositions=2
                     connected=1
 
                 }else{
                     if(this.armNumber==3){
-                        inRangeX=this.x-this.range-2.4
-                        inRangeY=this.y+this.bondDistance-this.range-2.45
+                        inRangeX=this.x-this.range-0.5
+                        inRangeY=this.y+this.bondDistance-this.range-0.5
                         detectorPositions=3
                         connected=1
 
 
                     }else{
-                        inRangeX=this.x-this.range-2.4
-                        inRangeY=this.y-this.bondDistance-this.range-2.45
+                        inRangeX=this.x-this.range-0.5
+                        inRangeY=this.y-this.bondDistance-this.range-0.5
                         detectorPositions=4
                         connected=1
                     
@@ -352,11 +372,11 @@ class Detector{
 }
 
 function loop(){
-    console.log(detectorPositions)
     armNumber=3
     inRangeX=mouseX
     inRangeY=mouseY
     hydrogenFixed=false
+    connected=0
     ctx.clearRect(0,0,canvas.width,canvas.height)
     drawOptions()
     detectorArray.forEach(detector=>{
@@ -365,7 +385,7 @@ function loop(){
 
         if(undo==1){
             moleculeArray.shift()
-            detectorArray.splice(0,4)
+            detectorArray.splice(detectorArray.length-4,4)
             undo=0
         }
 
@@ -381,7 +401,12 @@ function loop(){
 
         if (brush==1) {
             brushArmlength=15.4*3
-            
+            ctx.beginPath()
+            ctx.fillStyle='black'
+            ctx.arc(inRangeX,inRangeY,15.4,0,2*Math.PI,false)
+            ctx.fill()
+            ctx.beginPath()
+            ctx.fillStyle='white'
         } else {
             if(brush==2){
                 brushArmlength=7.4*3
@@ -389,6 +414,8 @@ function loop(){
                 brushArmlength=13.7*3
             }           
         }
+
+    
 
     requestAnimationFrame(loop)
 
@@ -454,10 +481,10 @@ function drawOptions(){
 
 
     if(distance<50){
-        if(mouseDown){
-            moleculeArray.splice(0,moleculeArray.length)
-            detectorArray.splice(0,detectorArray.length)
-        }
+        hoverTrash=true
+    }else{
+        hoverTrash=false
+
     }
     ctx.beginPath()
     ctx.fillStyle='white'
@@ -471,13 +498,10 @@ function drawOptions(){
     dy=750-35-mouseY
     distance=sqrt(dx**2+dy**2)
     if(distance<100){
-        if(mouseDownTime==1){
-            if (label==1) {
-                label=0
-            } else {
-                label=1
-            }
-        }
+        hoverLabel=1
+    }else{
+        hoverLabel=0
+
     }
 
 
@@ -495,6 +519,14 @@ window.addEventListener('click', function(){
         moleculeArray.unshift(new Molecule(inRangeX,inRangeY, newDetectedMLCIDXCan))
         snapAudio.play()
 
+    }
+    if(hoverTrash){
+        moleculeArray.splice(0,moleculeArray.length)
+        detectorArray.splice(0,detectorArray.length)
+    }
+
+    if(hoverLabel){
+        label=1-label
     }
 })
 
@@ -525,7 +557,7 @@ window.addEventListener('keydown', function(e){
         z=true
     }
     if(e.key=='z'){
-        if(lastKey=='Control'){
+        if(lastKey=='Control'||lastKey=='Meta'){
             undo=1
         }
     }else{
