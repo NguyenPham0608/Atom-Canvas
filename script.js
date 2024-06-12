@@ -18,6 +18,14 @@ snapAudio.src='Finger Snap.wav'
 let deleteX=0
 let deleteY=0
 
+let lastKey
+
+let connected=0
+
+let z =0
+
+let undo=0
+
 let mouseX=0
 let mouseY=0
 
@@ -46,6 +54,8 @@ let newDetectedMLCIDXCan=0
 let moleculeX=0
 let moleculeY=0
 
+let detectorPositions
+
 let dx=0
 let dy=0
 let distance=0
@@ -66,20 +76,29 @@ const detectorArray=[]
 class Molecule{
     constructor(x,y,idx){
 
+        this.detectorPositions=detectorPositions
+
         if (brush==1) {
             this.fillStyle='black'
             this.strokestyle='black'
             this.label='C'
         } else {
-            this.fillStyle='blue'
-            this.strokestyle='blue'
-            this.label='H'
+            if(brush==2){
+                this.fillStyle='blue'
+                this.strokestyle='blue'
+                this.label='H'
+            }else{
+                this.fillStyle='red'
+                this.strokestyle='red'
+                this.label='O'
+            }
         }
         this.distance=0
         this.dx=0
         this.dy=0
         this.brushType=brush
-
+        
+        this.connected=connected
 
 
         this.moleculeRadius=brushArmlength/3
@@ -105,7 +124,31 @@ class Molecule{
             detectorArray.push(new Detector(this.x-3,this.y-3+this.armLength, 3, this.idx,this.armLength))
             detectorArray.push(new Detector(this.x-3,this.y-3-this.armLength, 4, this.idx,this.armLength))
         }else{
-            detectorArray.push(new Detector(this.x+this.moleculeRadius/2,this.y+3-this.armLength, 4, this.idx,this.armLength))
+            if(this.brushType==2){
+                if(this.connected==1){
+                    detectorArray.push(new Detector(this.x+this.moleculeRadius/2,this.y+3-this.armLength, 4, this.idx,this.armLength))
+                }
+            }else{
+                //next//
+                if(this.connected==0){
+                    detectorArray.push(new Detector(this.x-3,this.y-3+this.armLength, 3, this.idx,this.armLength))
+                    detectorArray.push(new Detector(this.x-3,this.y-3-this.armLength, 4, this.idx,this.armLength))
+                }else{
+                    if(this.detectorPositions==1){
+                        detectorArray.push(new Detector(this.x-3+this.armLength,this.y-3, 1, this.idx,this.armLength))
+                    }else{
+                        if(this.detectorPositions==2){
+                            detectorArray.push(new Detector(this.x-3-this.armLength,this.y-3, 2, this.idx,this.armLength))
+                        }else{
+                            if(this.detectorPositions==3){
+                                detectorArray.push(new Detector(this.x-3,this.y-3+this.armLength, 3, this.idx,this.armLength))
+                            }else{
+                                detectorArray.push(new Detector(this.x-3,this.y-3-this.armLength, 4, this.idx,this.armLength))
+                            }
+                        }  
+                    }
+                }
+            }
         }
 
 
@@ -129,7 +172,6 @@ class Molecule{
     }
     draw(){
 
-        console.log(brush)
         ctx.beginPath()
         ctx.lineWidth=2
         ctx.strokeStyle=this.strokestyle
@@ -147,20 +189,55 @@ class Molecule{
             ctx.moveTo(this.x-this.moleculeRadius,this.y-this.moleculeRadius)
             ctx.lineTo(-this.armLength+this.x-this.moleculeRadius,this.y-this.moleculeRadius)
         }else{
-            if(this.armNumber==1){
-                ctx.moveTo(this.x-this.moleculeRadius,this.y-this.moleculeRadius)
-                ctx.lineTo(-this.armLength+this.x-this.moleculeRadius,this.y-this.moleculeRadius)
+            
+            if(this.brushType==2){
+                if(this.armNumber==1){
+                    ctx.moveTo(this.x-this.moleculeRadius,this.y-this.moleculeRadius)
+                    ctx.lineTo(-this.armLength+this.x-this.moleculeRadius,this.y-this.moleculeRadius)
+                }else{
+                    if(this.armNumber==2){
+                        ctx.moveTo(this.x-this.moleculeRadius,this.y-this.moleculeRadius)
+                        ctx.lineTo(this.armLength+this.x-this.moleculeRadius,this.y-this.moleculeRadius)
+                    }else{
+                        if(this.armNumber==3){
+                            ctx.moveTo(this.x-this.moleculeRadius,this.y-this.moleculeRadius)
+                            ctx.lineTo(this.x-this.moleculeRadius,-this.armLength+this.y-this.moleculeRadius)
+                        }else{
+                            ctx.moveTo(this.x-this.moleculeRadius,this.y-this.moleculeRadius)
+                            ctx.lineTo(this.x-this.moleculeRadius,this.armLength+this.y-this.moleculeRadius)
+                        }
+                    }
+                }
             }else{
-                if(this.armNumber==2){
+                if(this.armNumber==1){
+                    ctx.moveTo(this.x-this.moleculeRadius,this.y-this.moleculeRadius)
+                    ctx.lineTo(-this.armLength+this.x-this.moleculeRadius,this.y-this.moleculeRadius)
+            
                     ctx.moveTo(this.x-this.moleculeRadius,this.y-this.moleculeRadius)
                     ctx.lineTo(this.armLength+this.x-this.moleculeRadius,this.y-this.moleculeRadius)
                 }else{
-                    if(this.armNumber==3){
+                    if(this.armNumber==2){
                         ctx.moveTo(this.x-this.moleculeRadius,this.y-this.moleculeRadius)
-                        ctx.lineTo(this.x-this.moleculeRadius,-this.armLength+this.y-this.moleculeRadius)
+                        ctx.lineTo(this.armLength+this.x-this.moleculeRadius,this.y-this.moleculeRadius)
+            
+                        ctx.moveTo(this.x-this.moleculeRadius,this.y-this.moleculeRadius)
+                        ctx.lineTo(-this.armLength+this.x-this.moleculeRadius,this.y-this.moleculeRadius)
                     }else{
-                        ctx.moveTo(this.x-this.moleculeRadius,this.y-this.moleculeRadius)
-                        ctx.lineTo(this.x-this.moleculeRadius,this.armLength+this.y-this.moleculeRadius)
+                        if(this.armNumber==3){
+                            ctx.moveTo(this.x-this.moleculeRadius,this.y-this.moleculeRadius)
+                            ctx.lineTo(this.x-this.moleculeRadius,-this.armLength+this.y-this.moleculeRadius)
+            
+                            ctx.moveTo(this.x-this.moleculeRadius,this.y-this.moleculeRadius)
+                            ctx.lineTo(this.x-this.moleculeRadius,this.armLength+this.y-this.moleculeRadius)
+                        }else{
+                            if(this.armNumber==4){
+                                ctx.moveTo(this.x-this.moleculeRadius,this.y-this.moleculeRadius)
+                                ctx.lineTo(this.x-this.moleculeRadius,this.armLength+this.y-this.moleculeRadius)
+                
+                                ctx.moveTo(this.x-this.moleculeRadius,this.y-this.moleculeRadius)
+                                ctx.lineTo(this.x-this.moleculeRadius,-this.armLength+this.y-this.moleculeRadius)
+                            }
+                        }
                     }
                 }
             }
@@ -182,9 +259,15 @@ class Molecule{
                 ctx.font='30px verdana'
                 ctx.fillText(this.label, this.x-27, this.y-3, 99999000)
             }else{
-                ctx.beginPath()
-                ctx.font='13px verdana'
-                ctx.fillText(this.label, this.x-12, this.y-3, 99999000)
+                if(this.brushType==2){
+                    ctx.beginPath()
+                    ctx.font='13px verdana'
+                    ctx.fillText(this.label, this.x-12, this.y-3, 99999000)
+                }else{
+                    ctx.beginPath()
+                    ctx.font='25px verdana'
+                    ctx.fillText(this.label, this.x-24, this.y-4, 99999000)
+                }
             }
         }
     }
@@ -220,22 +303,31 @@ class Detector{
             if(this.armNumber==1){
                 inRangeX=this.x+this.bondDistance-this.range-2.45
                 inRangeY=this.y-this.range-2.4
+                detectorPositions=1
+                connected=1
 
             }else{
                 if(this.armNumber==2){
 
                     inRangeX=this.x-this.bondDistance-this.range-2.45
                     inRangeY=this.y-this.range-2.4
-
+                    detectorPositions=2
+                    connected=1
 
                 }else{
                     if(this.armNumber==3){
                         inRangeX=this.x-this.range-2.4
                         inRangeY=this.y+this.bondDistance-this.range-2.45
+                        detectorPositions=3
+                        connected=1
+
 
                     }else{
                         inRangeX=this.x-this.range-2.4
                         inRangeY=this.y-this.bondDistance-this.range-2.45
+                        detectorPositions=4
+                        connected=1
+                    
                     }
                 }
             }
@@ -260,6 +352,7 @@ class Detector{
 }
 
 function loop(){
+    console.log(detectorPositions)
     armNumber=3
     inRangeX=mouseX
     inRangeY=mouseY
@@ -270,22 +363,31 @@ function loop(){
         detector.calculate()
         detector.update()})
 
+        if(undo==1){
+            moleculeArray.shift()
+            detectorArray.splice(0,4)
+            undo=0
+        }
+
         if(space){
             // moleculeArray.push(new Molecule(mouseX,mouseY,newDetectedMLCIDXCan))
 
         }
-    moleculeArray.forEach(dot=>{
-        dot.calculate()
-        dot.update()
-        dot.draw()})
+    moleculeArray.forEach(atom=>{
+        atom.calculate()
+        atom.update()
+        atom.draw()})
 
 
         if (brush==1) {
             brushArmlength=15.4*3
             
         } else {
-            brushArmlength=7.4*3
-            
+            if(brush==2){
+                brushArmlength=7.4*3
+            }else{
+                brushArmlength=13.7*3
+            }           
         }
 
     requestAnimationFrame(loop)
@@ -303,7 +405,9 @@ function drawOptions(){
     ctx.fillRect(panX,panY,300,canvas.height)
 
     ctx.beginPath()
-    ctx.fillStyle='gray'
+    ctx.fillStyle='black'
+    
+
 
     ctx.arc(panX+150,100,radius,0,2*Math.PI,'false')
     ctx.fill()
@@ -324,6 +428,20 @@ function drawOptions(){
     if(distance<radius){
         if(mouseDown){
             brush=2
+        }
+    }
+
+    ctx.fill()
+
+    ctx.beginPath()
+    ctx.fillStyle='red'
+    ctx.arc(panX+150,400,radius,0,2*Math.PI,'false')
+    dx=(panX+150)-mouseX
+    dy=400-mouseY
+    distance=sqrt(dx**2+dy**2)
+    if(distance<radius){
+        if(mouseDown){
+            brush=3
         }
     }
 
@@ -402,6 +520,16 @@ window.addEventListener('mouseup',function(){
 window.addEventListener('keydown', function(e){
     if(e.key==' '){
         space=true
+    }
+    if(e.key=='z'){
+        z=true
+    }
+    if(e.key=='z'){
+        if(lastKey=='Control'){
+            undo=1
+        }
+    }else{
+        lastKey=e.key
     }
 
 })
