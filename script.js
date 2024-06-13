@@ -18,6 +18,7 @@ snapAudio.src='Finger Snap.wav'
 let deleteX=0
 let deleteY=0
 
+let atoms=0
 
 let lastKey
 
@@ -353,7 +354,10 @@ class Detector{
             }
             hydrogenFixed=true
         armNumber=this.armNumber
-
+        
+        if(mouseDown){
+            detectorArray.splice(this.idx,1)
+        }
 
         }
         if (this.distance<this.range) {
@@ -384,6 +388,7 @@ function loop(){
         detector.update()})
 
         if(undo==1){
+            atoms--
             moleculeArray.shift()
             detectorArray.splice(detectorArray.length-4,4)
             undo=0
@@ -402,20 +407,105 @@ function loop(){
         if (brush==1) {
             brushArmlength=15.4*3
             ctx.beginPath()
-            ctx.fillStyle='black'
+            ctx.strokeStyle='lightgrey'
+            ctx.moveTo(inRangeX,inRangeY)
+            ctx.lineTo(inRangeX+brushArmlength,inRangeY)
+                    
+            ctx.moveTo(inRangeX,inRangeY)
+            ctx.lineTo(inRangeX-brushArmlength,inRangeY)
+
+            ctx.moveTo(inRangeX,inRangeY)
+            ctx.lineTo(inRangeX,inRangeY+brushArmlength)
+
+            ctx.moveTo(inRangeX,inRangeY)
+            ctx.lineTo(inRangeX,inRangeY-brushArmlength)
+            ctx.stroke()
+
+            ctx.beginPath()
+            ctx.fillStyle='lightgrey'
             ctx.arc(inRangeX,inRangeY,15.4,0,2*Math.PI,false)
             ctx.fill()
-            ctx.beginPath()
             ctx.fillStyle='white'
+            ctx.font='27px verdana'
+            ctx.fillText('C',inRangeX-13+2,inRangeY+13-2,99999)
+
+
         } else {
             if(brush==2){
                 brushArmlength=7.4*3
+
+                ctx.beginPath()
+                ctx.strokeStyle='lightblue'
+                ctx.moveTo(inRangeX,inRangeY)
+
+                if(armNumber==1){
+                    ctx.lineTo(inRangeX-brushArmlength,inRangeY)
+                }else{
+                    if(armNumber==2){
+                        ctx.lineTo(inRangeX+brushArmlength,inRangeY)
+                    }else{
+                        if(armNumber==3){
+                            ctx.lineTo(inRangeX,inRangeY-brushArmlength)
+                        }else{
+                            ctx.lineTo(inRangeX,inRangeY+brushArmlength)
+                        }
+                    }
+                }
+    
+                ctx.stroke()
+                ctx.beginPath()
+                ctx.fillStyle='lightblue'
+                ctx.arc(inRangeX,inRangeY,7.4,0,2*Math.PI,false)
+                ctx.fill()
+                ctx.fillStyle='white'
+                ctx.font='13px verdana'
+                ctx.fillText('H',inRangeX-7+2,inRangeY+7-2,99999)
+
             }else{
                 brushArmlength=13.7*3
+
+                ctx.beginPath()
+                ctx.strokeStyle='#FFADAD'
+
+                if(armNumber==1){
+                    ctx.moveTo(inRangeX,inRangeY)
+                    ctx.lineTo(inRangeX-brushArmlength,inRangeY)
+                    ctx.moveTo(inRangeX,inRangeY)
+                    ctx.lineTo(inRangeX+brushArmlength,inRangeY)
+                }else{
+                    if(armNumber==2){
+                        ctx.moveTo(inRangeX,inRangeY)
+                        ctx.lineTo(inRangeX+brushArmlength,inRangeY)
+                        ctx.moveTo(inRangeX,inRangeY)
+                        ctx.lineTo(inRangeX-brushArmlength,inRangeY)
+                    }else{
+                        if(armNumber==3){
+                            ctx.moveTo(inRangeX,inRangeY)
+                            ctx.lineTo(inRangeX,inRangeY-brushArmlength)
+                            ctx.moveTo(inRangeX,inRangeY)
+                            ctx.lineTo(inRangeX,inRangeY+brushArmlength)
+                        }else{
+                            ctx.moveTo(inRangeX,inRangeY)
+                            ctx.lineTo(inRangeX,inRangeY-brushArmlength)
+                            ctx.moveTo(inRangeX,inRangeY)
+                            ctx.lineTo(inRangeX,inRangeY+brushArmlength)
+                        }
+                    }
+                }
+    
+                ctx.stroke()
+                ctx.beginPath()
+                ctx.fillStyle='#FFADAD'
+                ctx.arc(inRangeX,inRangeY,13.7,0,2*Math.PI,false)
+                ctx.fill()
+                ctx.fillStyle='white'
+                ctx.font='25px verdana'
+                ctx.fillText('O',inRangeX-12+2,inRangeY+12-2,99999)
+
             }           
         }
 
-    
+
 
     requestAnimationFrame(loop)
 
@@ -515,12 +605,13 @@ window.addEventListener('click', function(){
 
     if((mouseX<300)==false){
         newDetectedMLCIDXCan=getRandomInt(100000,999999)
-    
+        atoms++
         moleculeArray.unshift(new Molecule(inRangeX,inRangeY, newDetectedMLCIDXCan))
         snapAudio.play()
 
     }
     if(hoverTrash){
+        atoms=0
         moleculeArray.splice(0,moleculeArray.length)
         detectorArray.splice(0,detectorArray.length)
     }
