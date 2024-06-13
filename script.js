@@ -616,9 +616,10 @@ function drawOptions(){
     ctx.fillText('O',panX+optionX-10,optionY+10)
 
     ctx.drawImage(trashImage,0,0,512,512,panX+10,830,100,100)
-    dx=(panX+85)-mouseX
-    dy=830-mouseY
+    dx=(panX+60)-mouseX
+    dy=890-mouseY
     distance=sqrt(dx**2+dy**2)
+
 
     if(distance<50){
         hoverTrash=true
@@ -626,17 +627,23 @@ function drawOptions(){
         hoverTrash=false
     }
 
+
+
+
     ctx.drawImage(eraseImage,0,0,800,800,panX+130,830,100,100)
-    dx=(panX+205)-mouseX
-    dy=930-mouseY
+    dx=(panX+180)-mouseX
+    dy=870-mouseY
     distance=sqrt(dx**2+dy**2)
 
-    if(distance<50){
+
+    
+    if(distance<60){
         hoverErase=true
     }else{
         hoverErase=false
     }
-    console.log(hoverErase)
+
+
 
     ctx.beginPath()
     ctx.fillStyle='white'
