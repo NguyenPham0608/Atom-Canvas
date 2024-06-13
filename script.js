@@ -18,6 +18,9 @@ snapAudio.src='Finger Snap.wav'
 let deleteX=0
 let deleteY=0
 
+let optionX=0
+let optionY=0
+
 let atoms=0
 
 let lastKey
@@ -46,6 +49,8 @@ let space=false
 let hydrogenFixed=false
 
 let newestMoleculeIdx=0
+
+let newAtomCreated=false
 
 let panX=0
 let panY=0
@@ -127,14 +132,51 @@ class Molecule{
         this.y=y+this.moleculeRadius
 
         if(this.brushType==1){
-            detectors++
-            detectorArray.push(new Detector(this.x-4.90+this.armLength,this.y-4.90, 1, this.idx,this.armLength,detectors))
-            detectors++
-            detectorArray.push(new Detector(this.x-4.90-this.armLength,this.y-4.90, 2, this.idx,this.armLength,detectors))
-            detectors++
-            detectorArray.push(new Detector(this.x-4.90,this.y-4.95+this.armLength, 3, this.idx,this.armLength,detectors))
-            detectors++
-            detectorArray.push(new Detector(this.x-4.90,this.y-4.95-this.armLength, 4, this.idx,this.armLength,detectors))
+            if(this.connected==1){
+                if(this.armNumber==1){
+                    detectors++
+                    detectorArray.push(new Detector(this.x-4.90+this.armLength,this.y-4.90, 1, this.idx,this.armLength,detectors))
+                    detectors++
+                    detectorArray.push(new Detector(this.x-4.90,this.y-4.95+this.armLength, 3, this.idx,this.armLength,detectors))
+                    detectors++
+                    detectorArray.push(new Detector(this.x-4.90,this.y-4.95-this.armLength, 4, this.idx,this.armLength,detectors))
+                }else{
+                    if(this.armNumber==2){
+                        detectors++
+                        detectorArray.push(new Detector(this.x-4.90-this.armLength,this.y-4.90, 2, this.idx,this.armLength,detectors))
+                        detectors++
+                        detectorArray.push(new Detector(this.x-4.90,this.y-4.95+this.armLength, 3, this.idx,this.armLength,detectors))
+                        detectors++
+                        detectorArray.push(new Detector(this.x-4.90,this.y-4.95-this.armLength, 4, this.idx,this.armLength,detectors))
+                    }else{
+                        if(this.armNumber==3){
+                            detectors++
+                            detectorArray.push(new Detector(this.x-4.90+this.armLength,this.y-4.90, 1, this.idx,this.armLength,detectors))
+                            detectors++
+                            detectorArray.push(new Detector(this.x-4.90-this.armLength,this.y-4.90, 2, this.idx,this.armLength,detectors))
+                            detectors++
+                            detectorArray.push(new Detector(this.x-4.90,this.y-4.95+this.armLength, 3, this.idx,this.armLength,detectors))
+                        }else{
+                            detectors++
+                            detectorArray.push(new Detector(this.x-4.90+this.armLength,this.y-4.90, 1, this.idx,this.armLength,detectors))
+                            detectors++
+                            detectorArray.push(new Detector(this.x-4.90-this.armLength,this.y-4.90, 2, this.idx,this.armLength,detectors))
+                            detectors++
+                            detectorArray.push(new Detector(this.x-4.90,this.y-4.95-this.armLength, 4, this.idx,this.armLength,detectors))
+
+                        }
+                    }
+                }
+            }else{
+                detectors++
+                detectorArray.push(new Detector(this.x-4.90+this.armLength,this.y-4.90, 1, this.idx,this.armLength,detectors))
+                detectors++
+                detectorArray.push(new Detector(this.x-4.90-this.armLength,this.y-4.90, 2, this.idx,this.armLength,detectors))
+                detectors++
+                detectorArray.push(new Detector(this.x-4.90,this.y-4.95+this.armLength, 3, this.idx,this.armLength,detectors))
+                detectors++
+                detectorArray.push(new Detector(this.x-4.90,this.y-4.95-this.armLength, 4, this.idx,this.armLength,detectors))
+            }
         }else{
             if(this.brushType==2){
                 if(this.connected==0){
@@ -308,70 +350,85 @@ class Detector{
         this.range=10
         this.idx=idx
         this.fillStyle='blue'
+        this.active=true
+        this.delay=false
+        this.delayDelay=0
+
     }
 
     calculate(){
-        this.dx=this.x-mouseX-this.range
-        this.dy=this.y-mouseY-this.range
-        this.distance=Math.sqrt((this.dx**2)+(this.dy**2))
+        console.log(this.active)
+        if(this.active){
+            this.dx=this.x-mouseX-this.range
+            this.dy=this.y-mouseY-this.range
+            this.distance=Math.sqrt((this.dx**2)+(this.dy**2))
+        }
     }
     update(){
-        this.bondDistance=this.armLength+brushArmlength
-        if(this.distance<this.range){
-            newDetectedIDX=this.moleculeIdx
-            newDetectedARM=this.armNumber
-            newDetectedMLCIDX=newDetectedMLCIDXCan
-            if(this.armNumber==1){
-                inRangeX=this.x+this.bondDistance-this.range-0.5
-                inRangeY=this.y-this.range-0.5
-                detectorPositions=1
-                connected=1
-
-            }else{
-                if(this.armNumber==2){
-
-                    inRangeX=this.x-this.bondDistance-this.range-0.5
+        if(this.active){
+            this.bondDistance=this.armLength+brushArmlength
+            if(this.distance<this.range){
+                newDetectedIDX=this.moleculeIdx
+                newDetectedARM=this.armNumber
+                newDetectedMLCIDX=newDetectedMLCIDXCan
+                if(this.armNumber==1){
+                    inRangeX=this.x+this.bondDistance-this.range-0.5
                     inRangeY=this.y-this.range-0.5
-                    detectorPositions=2
+                    detectorPositions=1
                     connected=1
-
+    
                 }else{
-                    if(this.armNumber==3){
-                        inRangeX=this.x-this.range-0.5
-                        inRangeY=this.y+this.bondDistance-this.range-0.5
-                        detectorPositions=3
+                    if(this.armNumber==2){
+    
+                        inRangeX=this.x-this.bondDistance-this.range-0.5
+                        inRangeY=this.y-this.range-0.5
+                        detectorPositions=2
                         connected=1
-
-
+    
                     }else{
-                        inRangeX=this.x-this.range-0.5
-                        inRangeY=this.y-this.bondDistance-this.range-0.5
-                        detectorPositions=4
-                        connected=1
-                    
+                        if(this.armNumber==3){
+                            inRangeX=this.x-this.range-0.5
+                            inRangeY=this.y+this.bondDistance-this.range-0.5
+                            detectorPositions=3
+                            connected=1
+    
+    
+                        }else{
+                            inRangeX=this.x-this.range-0.5
+                            inRangeY=this.y-this.bondDistance-this.range-0.5
+                            detectorPositions=4
+                            connected=1
+                        
+                        }
                     }
                 }
+
+
+
+                
+
+                hydrogenFixed=true
+                armNumber=this.armNumber
+            
+                if(newAtomCreated){
+                    this.active=false
+                    newAtomCreated=false
+                }
+    
             }
-            hydrogenFixed=true
-        armNumber=this.armNumber
-        
-        // if(mouseDown){
-        //     detectorArray.splice(this.idx,1)
-        // }
-
+            if (this.distance<this.range) {
+                this.fillStyle='#3AFF00'
+            } else {
+                this.fillStyle='white'
+            }
+            ctx.beginPath()
+            ctx.fillStyle=this.fillStyle
+            ctx.arc(this.x-1-this.range,this.y-1-this.range,this.range,0,2*Math.PI,false)
+            ctx.fill()
+    
+    
+    
         }
-        if (this.distance<this.range) {
-            this.fillStyle='#3AFF00'
-        } else {
-            this.fillStyle='white'
-        }
-        ctx.beginPath()
-        ctx.fillStyle=this.fillStyle
-        ctx.arc(this.x-1-this.range,this.y-1-this.range,this.range,0,2*Math.PI,false)
-        ctx.fill()
-
-
-
     }
 }
 
@@ -394,10 +451,7 @@ function loop(){
             undo=0
         }
 
-        if(space){
-            // moleculeArray.push(new Molecule(mouseX,mouseY,newDetectedMLCIDXCan))
 
-        }
     moleculeArray.forEach(atom=>{
         atom.calculate()
         atom.update()
@@ -424,26 +478,46 @@ function drawOptions(){
     panX=0
     ctx.fillRect(panX,panY,300,canvas.height)
 
+    optionX=70
+    optionY=70
+    ctx.beginPath()
+    ctx.strokeStyle='black'
+    ctx.moveTo(panX+optionX,optionY)
+    ctx.lineTo(panX+optionX+(15.4*3),optionY)
+    ctx.moveTo(panX+optionX,optionY)
+    ctx.lineTo(panX+optionX-(15.4*3),optionY)
+    ctx.moveTo(panX+optionX,optionY)
+    ctx.lineTo(panX+optionX,optionY+(15.4*3))
+    ctx.moveTo(panX+optionX,optionY)
+    ctx.lineTo(panX+optionX,optionY-(15.4*3))
+
+    ctx.stroke()
+
     ctx.beginPath()
     ctx.fillStyle='black'
-    
-
-
-    ctx.arc(panX+150,100,radius,0,2*Math.PI,'false')
+    ctx.arc(panX+optionX,optionY,15.4,0,2*Math.PI,'false')
     ctx.fill()
-    dx=(panX+150)-mouseX
-    dy=100-mouseY
+
+
+    dx=(panX+optionX)-mouseX
+    dy=optionY-mouseY
     distance=sqrt(dx**2+dy**2)
     if(distance<radius){
         if(mouseDown){
             brush=1
         }
     }
+
+    ctx.fillStyle='white'
+    ctx.font='27px verdana'
+    ctx.fillText('C',panX+optionX-11,optionY+11)
+
+    optionY=190
     ctx.beginPath()
     ctx.fillStyle='blue'
-    ctx.arc(panX+150,250,radius,0,2*Math.PI,'false')
-    dx=(panX+150)-mouseX
-    dy=250-mouseY
+    ctx.arc(panX+optionX,optionY,7.4,0,2*Math.PI,'false')
+    dx=(panX+optionX)-mouseX
+    dy=optionY-mouseY
     distance=sqrt(dx**2+dy**2)
     if(distance<radius){
         if(mouseDown){
@@ -453,11 +527,24 @@ function drawOptions(){
 
     ctx.fill()
 
+    ctx.fillStyle='white'
+    ctx.font='13px verdana'
+    ctx.fillText('H',panX+optionX-5,optionY+5)
+
+    ctx.beginPath()
+    ctx.strokeStyle='blue'
+    ctx.moveTo(panX+optionX,optionY)
+    ctx.lineTo(panX+optionX,optionY-(7.4*3))
+    ctx.stroke()
+
+    optionY=290
+
+
     ctx.beginPath()
     ctx.fillStyle='red'
-    ctx.arc(panX+150,400,radius,0,2*Math.PI,'false')
-    dx=(panX+150)-mouseX
-    dy=400-mouseY
+    ctx.arc(panX+optionX,optionY,13.7,0,2*Math.PI,'false')
+    dx=(panX+optionX)-mouseX
+    dy=optionY-mouseY
     distance=sqrt(dx**2+dy**2)
     if(distance<radius){
         if(mouseDown){
@@ -466,6 +553,18 @@ function drawOptions(){
     }
 
     ctx.fill()
+
+
+
+    ctx.beginPath()
+    ctx.strokeStyle='red'
+    ctx.moveTo(panX+optionX,optionY+(13.7*3))
+    ctx.lineTo(panX+optionX,optionY-(13.7*3))
+    ctx.stroke()
+
+    ctx.fillStyle='white'
+    ctx.font='25px verdana'
+    ctx.fillText('O',panX+optionX-10,optionY+10)
 
     ctx.drawImage(trashImage,0,0,512,512,panX+10,790,100,100)
     dx=(panX+60)-mouseX
@@ -518,6 +617,9 @@ window.addEventListener('click', function(){
         newDetectedMLCIDXCan=getRandomInt(100000,999999)
         atoms++
         moleculeArray.unshift(new Molecule(inRangeX,inRangeY, newDetectedMLCIDXCan))
+        if(connected==1){
+            newAtomCreated=true
+        }
         snapAudio.play()
 
     }
