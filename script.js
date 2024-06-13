@@ -9,14 +9,23 @@ let canvasPosition = canvas.getBoundingClientRect()
 let trashImage=new Image()
 trashImage.src='https://cdn3.iconfinder.com/data/icons/linecons-free-vector-icons-pack/32/trash-512.png'
 
+let eraseImage=new Image()
+eraseImage.src='https://www.svgrepo.com/download/66231/eraser.svg'
+
 let mode='draw'
 let label=1
+
+let connectionIdx=0
+
+let erase=false
 
 let snapAudio=new Audio()
 snapAudio.src='Finger Snap.wav'
 
 let deleteX=0
 let deleteY=0
+
+let nextId=1
 
 let optionX=0
 let optionY=0
@@ -32,6 +41,8 @@ let hoverLabel=0
 let z =0
 
 let undo=0
+
+
 
 let mouseX=0
 let mouseY=0
@@ -73,10 +84,16 @@ let dx=0
 let dy=0
 let distance=0
 
+let hoverErase=false
+
 let moleculeRadius=30
+
+let selected=0
 
 let mouseDownX=0
 let mouseDownY=0
+
+let deleteIdx=0
 
 let mouseDown=false
 
@@ -87,7 +104,7 @@ const moleculeArray=[]
 const detectorArray=[]
 
 class Molecule{
-    constructor(x,y,idx){
+    constructor(x,y,idx,id){
 
         this.detectorPositions=detectorPositions
 
@@ -106,18 +123,20 @@ class Molecule{
                 this.label='O'
             }
         }
+
+        this.id=id
         this.distance=0
         this.dx=0
         this.dy=0
         this.brushType=brush
         
         this.connected=connected
-
+        this.brightness=0
 
         this.moleculeRadius=brushArmlength/3
         this.armLength=brushArmlength
 
-
+        this.selected=false
         this.armNumber=armNumber
 
         this.idx=idx
@@ -222,17 +241,34 @@ class Molecule{
         this.dx=mouseX-this.x
         this.dy=mouseY-this.y
         this.distance=Math.sqrt((this.dx*this.dx)+(this.dy*this.dy))
-        this.distance=Math.round(this.distance)
-        if(newDetectedIDX==this.idx){
-            moleculeX=this.x
-            moleculeY=this.y
+
+
+
+        if(erase){
+            if(this.distance<this.moleculeRadius*3){
+                if(mouseDown){
+                    deleteIdx=this.idx
+                    deleteItemById(this.id)
+
+                }
+            }else{
+                if(mouseDown){
+                    this.brightness=0
+                    this.selected=false
+                }
+            }
         }
     }
+    
     update(){
-
+        
 
     }
     draw(){
+
+        // if(this.idx==deleteIdx){
+        //     deleteItemById(this.id)
+        // }
 
         ctx.beginPath()
         ctx.lineWidth=2
@@ -357,7 +393,6 @@ class Detector{
     }
 
     calculate(){
-        console.log(this.active)
         if(this.active){
             this.dx=this.x-mouseX-this.range
             this.dy=this.y-mouseY-this.range
@@ -368,6 +403,7 @@ class Detector{
         if(this.active){
             this.bondDistance=this.armLength+brushArmlength
             if(this.distance<this.range){
+                connectionIdx=this.moleculeIdx
                 newDetectedIDX=this.moleculeIdx
                 newDetectedARM=this.armNumber
                 newDetectedMLCIDX=newDetectedMLCIDXCan
@@ -410,10 +446,10 @@ class Detector{
                 hydrogenFixed=true
                 armNumber=this.armNumber
             
-                if(newAtomCreated){
-                    this.active=false
-                    newAtomCreated=false
-                }
+                // if(newAtomCreated){
+                //     this.active=false
+                //     newAtomCreated=false
+                // }
     
             }
             if (this.distance<this.range) {
@@ -438,7 +474,20 @@ function loop(){
     inRangeY=mouseY
     hydrogenFixed=false
     connected=0
+    
     ctx.clearRect(0,0,canvas.width,canvas.height)
+    connectionIdx=0
+    if(erase){
+
+        ctx.fillStyle='#FF0000'
+        ctx.fillRect(0,0,canvas.width,10)
+        ctx.fillRect(0,canvas.height,canvas.width,-10)
+        ctx.fillRect(panX+300,canvas.height,10,-canvas.height)
+        ctx.fillRect(canvas.width,canvas.height,-10,-canvas.height)
+
+
+
+    }
     drawOptions()
     detectorArray.forEach(detector=>{
         detector.calculate()
@@ -539,7 +588,7 @@ function drawOptions(){
 
     optionY=290
 
-
+    console.log(erase)
     ctx.beginPath()
     ctx.fillStyle='red'
     ctx.arc(panX+optionX,optionY,13.7,0,2*Math.PI,'false')
@@ -566,18 +615,29 @@ function drawOptions(){
     ctx.font='25px verdana'
     ctx.fillText('O',panX+optionX-10,optionY+10)
 
-    ctx.drawImage(trashImage,0,0,512,512,panX+10,790,100,100)
-    dx=(panX+60)-mouseX
-    dy=790-mouseY
+    ctx.drawImage(trashImage,0,0,512,512,panX+10,830,100,100)
+    dx=(panX+85)-mouseX
+    dy=830-mouseY
     distance=sqrt(dx**2+dy**2)
-
 
     if(distance<50){
         hoverTrash=true
     }else{
         hoverTrash=false
-
     }
+
+    ctx.drawImage(eraseImage,0,0,800,800,panX+130,830,100,100)
+    dx=(panX+205)-mouseX
+    dy=930-mouseY
+    distance=sqrt(dx**2+dy**2)
+
+    if(distance<50){
+        hoverErase=true
+    }else{
+        hoverErase=false
+    }
+    console.log(hoverErase)
+
     ctx.beginPath()
     ctx.fillStyle='white'
     ctx.roundRect(panX+10,750,180,-70,10)
@@ -616,21 +676,42 @@ window.addEventListener('click', function(){
     if((mouseX<300)==false){
         newDetectedMLCIDXCan=getRandomInt(100000,999999)
         atoms++
-        moleculeArray.unshift(new Molecule(inRangeX,inRangeY, newDetectedMLCIDXCan))
-        if(connected==1){
-            newAtomCreated=true
+        if(erase==false){
+            if(connected==0){
+                moleculeArray.unshift(new Molecule(inRangeX,inRangeY, Math.floor(Math.random()*10-1) ,nextId++))
+            }else{
+                moleculeArray.unshift(new Molecule(inRangeX,inRangeY, connectionIdx ,nextId++))
+            }
+            if(connected==1){
+                newAtomCreated=true
+            }
+            snapAudio.play()
+
         }
-        snapAudio.play()
+
 
     }
     if(hoverTrash){
         atoms=0
         moleculeArray.splice(0,moleculeArray.length)
         detectorArray.splice(0,detectorArray.length)
+        snapAudio.play()
     }
 
     if(hoverLabel){
         label=1-label
+        snapAudio.play()
+
+    }
+
+    if(hoverErase){
+        if(erase){
+            erase=false
+        }else{
+            erase=true
+        }
+        snapAudio.play()
+
     }
 })
 
@@ -667,6 +748,9 @@ window.addEventListener('keydown', function(e){
     }else{
         lastKey=e.key
     }
+    if(e.key=='Backspace'){
+        erase=true
+    }
 
 })
 
@@ -692,106 +776,118 @@ function getRandomInt(min, max) {
 
 
 function drawGhostedAtoms(){
-    if (brush==1) {
-        brushArmlength=15.4*3
-        ctx.beginPath()
-        ctx.strokeStyle='lightgrey'
-        ctx.moveTo(inRangeX,inRangeY)
-        ctx.lineTo(inRangeX+brushArmlength,inRangeY)
-                
-        ctx.moveTo(inRangeX,inRangeY)
-        ctx.lineTo(inRangeX-brushArmlength,inRangeY)
+    if(erase){
 
-        ctx.moveTo(inRangeX,inRangeY)
-        ctx.lineTo(inRangeX,inRangeY+brushArmlength)
-
-        ctx.moveTo(inRangeX,inRangeY)
-        ctx.lineTo(inRangeX,inRangeY-brushArmlength)
-        ctx.stroke()
-
-        ctx.beginPath()
-        ctx.fillStyle='lightgrey'
-        ctx.arc(inRangeX,inRangeY,15.4,0,2*Math.PI,false)
-        ctx.fill()
-        ctx.fillStyle='white'
-        ctx.font='27px verdana'
-        ctx.fillText('C',inRangeX-13+2,inRangeY+13-2,99999)
-
-
-    } else {
-        if(brush==2){
-            brushArmlength=7.4*3
-
+    }else{
+        if (brush==1) {
+            brushArmlength=15.4*3
             ctx.beginPath()
-            ctx.strokeStyle='lightblue'
+            ctx.strokeStyle='lightgrey'
             ctx.moveTo(inRangeX,inRangeY)
-
-            if(armNumber==1){
-                ctx.lineTo(inRangeX-brushArmlength,inRangeY)
-            }else{
-                if(armNumber==2){
-                    ctx.lineTo(inRangeX+brushArmlength,inRangeY)
-                }else{
-                    if(armNumber==3){
-                        ctx.lineTo(inRangeX,inRangeY-brushArmlength)
-                    }else{
-                        ctx.lineTo(inRangeX,inRangeY+brushArmlength)
-                    }
-                }
-            }
-
+            ctx.lineTo(inRangeX+brushArmlength,inRangeY)
+                    
+            ctx.moveTo(inRangeX,inRangeY)
+            ctx.lineTo(inRangeX-brushArmlength,inRangeY)
+    
+            ctx.moveTo(inRangeX,inRangeY)
+            ctx.lineTo(inRangeX,inRangeY+brushArmlength)
+    
+            ctx.moveTo(inRangeX,inRangeY)
+            ctx.lineTo(inRangeX,inRangeY-brushArmlength)
             ctx.stroke()
+    
             ctx.beginPath()
-            ctx.fillStyle='lightblue'
-            ctx.arc(inRangeX,inRangeY,7.4,0,2*Math.PI,false)
+            ctx.fillStyle='lightgrey'
+            ctx.arc(inRangeX,inRangeY,15.4,0,2*Math.PI,false)
             ctx.fill()
             ctx.fillStyle='white'
-            ctx.font='13px verdana'
-            ctx.fillText('H',inRangeX-7+2,inRangeY+7-2,99999)
-
-        }else{
-            brushArmlength=13.7*3
-
-            ctx.beginPath()
-            ctx.strokeStyle='#FFADAD'
-
-            if(armNumber==1){
+            ctx.font='27px verdana'
+            ctx.fillText('C',inRangeX-13+2,inRangeY+13-2,99999)
+    
+    
+        } else {
+            if(brush==2){
+                brushArmlength=7.4*3
+    
+                ctx.beginPath()
+                ctx.strokeStyle='lightblue'
                 ctx.moveTo(inRangeX,inRangeY)
-                ctx.lineTo(inRangeX-brushArmlength,inRangeY)
-                ctx.moveTo(inRangeX,inRangeY)
-                ctx.lineTo(inRangeX+brushArmlength,inRangeY)
-            }else{
-                if(armNumber==2){
-                    ctx.moveTo(inRangeX,inRangeY)
-                    ctx.lineTo(inRangeX+brushArmlength,inRangeY)
-                    ctx.moveTo(inRangeX,inRangeY)
+    
+                if(armNumber==1){
                     ctx.lineTo(inRangeX-brushArmlength,inRangeY)
                 }else{
-                    if(armNumber==3){
-                        ctx.moveTo(inRangeX,inRangeY)
-                        ctx.lineTo(inRangeX,inRangeY-brushArmlength)
-                        ctx.moveTo(inRangeX,inRangeY)
-                        ctx.lineTo(inRangeX,inRangeY+brushArmlength)
+                    if(armNumber==2){
+                        ctx.lineTo(inRangeX+brushArmlength,inRangeY)
                     }else{
-                        ctx.moveTo(inRangeX,inRangeY)
-                        ctx.lineTo(inRangeX,inRangeY-brushArmlength)
-                        ctx.moveTo(inRangeX,inRangeY)
-                        ctx.lineTo(inRangeX,inRangeY+brushArmlength)
+                        if(armNumber==3){
+                            ctx.lineTo(inRangeX,inRangeY-brushArmlength)
+                        }else{
+                            ctx.lineTo(inRangeX,inRangeY+brushArmlength)
+                        }
                     }
                 }
-            }
-
-            ctx.stroke()
-            ctx.beginPath()
-            ctx.fillStyle='#FFADAD'
-            ctx.arc(inRangeX,inRangeY,13.7,0,2*Math.PI,false)
-            ctx.fill()
-            ctx.fillStyle='white'
-            ctx.font='25px verdana'
-            ctx.fillText('O',inRangeX-12+2,inRangeY+12-2,99999)
-
-        }           
+    
+                ctx.stroke()
+                ctx.beginPath()
+                ctx.fillStyle='lightblue'
+                ctx.arc(inRangeX,inRangeY,7.4,0,2*Math.PI,false)
+                ctx.fill()
+                ctx.fillStyle='white'
+                ctx.font='13px verdana'
+                ctx.fillText('H',inRangeX-7+2,inRangeY+7-2,99999)
+    
+            }else{
+                brushArmlength=13.7*3
+    
+                ctx.beginPath()
+                ctx.strokeStyle='#FFADAD'
+    
+                if(armNumber==1){
+                    ctx.moveTo(inRangeX,inRangeY)
+                    ctx.lineTo(inRangeX-brushArmlength,inRangeY)
+                    ctx.moveTo(inRangeX,inRangeY)
+                    ctx.lineTo(inRangeX+brushArmlength,inRangeY)
+                }else{
+                    if(armNumber==2){
+                        ctx.moveTo(inRangeX,inRangeY)
+                        ctx.lineTo(inRangeX+brushArmlength,inRangeY)
+                        ctx.moveTo(inRangeX,inRangeY)
+                        ctx.lineTo(inRangeX-brushArmlength,inRangeY)
+                    }else{
+                        if(armNumber==3){
+                            ctx.moveTo(inRangeX,inRangeY)
+                            ctx.lineTo(inRangeX,inRangeY-brushArmlength)
+                            ctx.moveTo(inRangeX,inRangeY)
+                            ctx.lineTo(inRangeX,inRangeY+brushArmlength)
+                        }else{
+                            ctx.moveTo(inRangeX,inRangeY)
+                            ctx.lineTo(inRangeX,inRangeY-brushArmlength)
+                            ctx.moveTo(inRangeX,inRangeY)
+                            ctx.lineTo(inRangeX,inRangeY+brushArmlength)
+                        }
+                    }
+                }
+    
+                ctx.stroke()
+                ctx.beginPath()
+                ctx.fillStyle='#FFADAD'
+                ctx.arc(inRangeX,inRangeY,13.7,0,2*Math.PI,false)
+                ctx.fill()
+                ctx.fillStyle='white'
+                ctx.font='25px verdana'
+                ctx.fillText('O',inRangeX-12+2,inRangeY+12-2,99999)
+    
+            }           
+        }
     }
+
+}
+
+function deleteItemById(id) {
+    const index = moleculeArray.findIndex(item => item.id === id);
+    if (index !== -1) {
+        moleculeArray.splice(index, 1);
+    } 
 }
 
 loop()
