@@ -20,7 +20,11 @@ let connectionIdx=0
 let erase=false
 
 let snapAudio=new Audio()
-snapAudio.src='Finger Snap.wav'
+// snapAudio.src='Finger Snap.wav'
+snapAudio.src='Button-Click.wav'
+
+let optionsAudio=new Audio()
+optionsAudio.src='OptionsSFX.wav'
 
 let deleteX=0
 let deleteY=0
@@ -553,7 +557,10 @@ function drawOptions(){
     distance=sqrt(dx**2+dy**2)
     if(distance<radius){
         if(mouseDown){
-            brush=1
+            if(brush !==1){
+                brush=1
+            }
+            snapAudio.play()
         }
     }
 
@@ -570,7 +577,11 @@ function drawOptions(){
     distance=sqrt(dx**2+dy**2)
     if(distance<radius){
         if(mouseDown){
-            brush=2
+            if(brush !==2){
+                brush=2
+            }
+            snapAudio.play()
+
         }
     }
 
@@ -597,7 +608,11 @@ function drawOptions(){
     distance=sqrt(dx**2+dy**2)
     if(distance<radius){
         if(mouseDown){
-            brush=3
+            if(brush !==3){
+                brush=3
+            }
+            snapAudio.play()
+
         }
     }
 
@@ -692,7 +707,7 @@ window.addEventListener('click', function(){
             if(connected==1){
                 newAtomCreated=true
             }
-            snapAudio.play()
+            optionsAudio.play()
 
         }
 
@@ -702,12 +717,12 @@ window.addEventListener('click', function(){
         atoms=0
         moleculeArray.splice(0,moleculeArray.length)
         detectorArray.splice(0,detectorArray.length)
-        snapAudio.play()
+        optionsAudio.play()
     }
 
     if(hoverLabel){
         label=1-label
-        snapAudio.play()
+        optionsAudio.play()
 
     }
 
@@ -717,7 +732,8 @@ window.addEventListener('click', function(){
         }else{
             erase=true
         }
-        snapAudio.play()
+    
+        optionsAudio.play()
 
     }
 })
